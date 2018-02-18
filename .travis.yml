@@ -28,4 +28,4 @@ before_script:
  - cd build
  - cmake ..
 
-script: make VERBOSE=1 && ./bin/tests
+script: make && ./bin/tests
