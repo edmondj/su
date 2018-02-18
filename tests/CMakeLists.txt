@@ -4,3 +4,4 @@ set(SRC
 )
 
 add_executable(tests ${SRC})
+target_compile_features(tests PUBLIC cxx_std_17)
