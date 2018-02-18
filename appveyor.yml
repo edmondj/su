@@ -9,4 +9,4 @@ build_script:
 
     cmake --build . --config "Release"
 test_script:
-- cmd: bin\tests.exe
+- cmd: bin\Release\tests.exe
