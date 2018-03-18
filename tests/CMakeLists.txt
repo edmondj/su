@@ -1,6 +1,8 @@
 set(SRC
-	main.cpp
 	catch.hpp
+	main.cpp
+  tagged_type_test.cpp
+  type_list_test.cpp
 )
 
 add_executable(tests ${SRC})
