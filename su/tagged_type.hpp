@@ -14,6 +14,11 @@ public:
     : _value(std::move(value))
   {}
 
+  tagged_type(const tagged_type&) = default;
+  tagged_type& operator=(const tagged_type&) = default;
+  tagged_type(tagged_type&&) = default;
+  tagged_type& operator=(tagged_type&&) = default;
+
   T& get() { return _value; }
   const T& get() const { return _value; }
 
