@@ -45,12 +45,12 @@ public:
 
   using type = number<T, Ratio, Unit>;
 
-  template<typename U, typename = std::enable_if_t<!is_unitless_v<type>>>
+  template<typename U, typename = std::enable_if_t<std::is_constructible_v<T, U> && !is_unitless_v<type>>>
   constexpr explicit number(U&& value)
     : _value(std::forward<U>(value))
   {}
 
-  template<typename U, typename = std::enable_if_t<is_unitless_v<type>>, typename = void>
+  template<typename U, typename = std::enable_if_t<std::is_constructible_v<T, U> && is_unitless_v<type>>, typename = void>
   constexpr number(U&& value)
     : _value(std::forward<U>(value))
   {}
