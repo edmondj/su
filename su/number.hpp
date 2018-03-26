@@ -25,13 +25,13 @@ template<typename T, typename Ratio, typename Unit>
 class number;
 
 template<typename T, typename Ratio = std::ratio<1>>
-using unitLess = number<T, Ratio, type_list<>>;
+using unitless = number<T, Ratio, type_list<>>;
 
 template<typename T>
 struct is_unitless : public std::false_type {};
 
 template<typename T, typename Ratio>
-struct is_unitless<unitLess<T, Ratio>> : public std::true_type {};
+struct is_unitless<unitless<T, Ratio>> : public std::true_type {};
 
 template<typename T>
 constexpr bool is_unitless_v = is_unitless<T>::value;
@@ -69,10 +69,12 @@ public:
   template<typename U, typename DestRatio, typename DestUnit>
   constexpr operator number<U, DestRatio, DestUnit>()
   {
-    if constexpr (std::is_same_v<Unit, DestUnit>)
+    constexpr bool same_unit = std::is_same_v<Unit, DestUnit>;
+
+    static_assert(same_unit, "No known conversion");
+
+    if constexpr (same_unit)
       return number<U, DestRatio, DestUnit>(apply_ratio<T, std::ratio_divide<Ratio, DestRatio>>(_value));
-    else
-      static_assert(!std::is_void_v<std::void_t<U, DestRatio, DestUnit>>, "No known conversion");
   }
 
 private:
