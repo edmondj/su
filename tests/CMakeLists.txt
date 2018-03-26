@@ -3,6 +3,7 @@ set(SRC
 	main.cpp
   tagged_type_test.cpp
   type_list_test.cpp
+  number_test.cpp
 )
 
 add_executable(tests ${SRC})
