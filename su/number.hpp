@@ -88,7 +88,6 @@ public:
     return *this;
   }
 
-  constexpr T& value() { return _value; }
   constexpr const T& value() const { return _value; }
 
   constexpr explicit operator T&() { return value(); }
