@@ -148,7 +148,7 @@ public:
     return *this;
   }
 
-  template<typename = std::enable_if_t<!std::is_same_v<number, unitless<value_type, ratio>>>>
+  template<bool condition = !std::is_same_v<number, unitless<value_type, ratio>>, typename = std::enable_if_t<condition>>
   constexpr number& operator+=(const unitless<value_type, ratio>& r)
   {
     _value += r.value();
@@ -168,7 +168,7 @@ public:
     return *this;
   }
 
-  template<typename = std::enable_if_t<!std::is_same_v<number, unitless<value_type, ratio>>>>
+  template<bool condition = !std::is_same_v<number, unitless<value_type, ratio>>, typename = std::enable_if_t<condition>>
   constexpr number& operator-=(const unitless<value_type, ratio>& r)
   {
     _value -= r.value();
