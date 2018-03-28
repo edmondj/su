@@ -40,11 +40,13 @@ struct is_convertible<T, SrcUnit, DestUnit, std::void_t<decltype(converter<SrcUn
 template<typename T, typename SrcUnit, typename DestUnit>
 constexpr bool is_convertible_v = is_convertible<T, SrcUnit, DestUnit>::value;
 
+using unitless_unit = type_list<>;
+
 template<typename T, typename Ratio, typename Unit>
 class number;
 
 template<typename T, typename Ratio = std::ratio<1>>
-using unitless = number<T, Ratio, type_list<>>;
+using unitless = number<T, Ratio, unitless_unit>;
 
 template<typename T>
 struct is_unitless : public std::false_type {};
@@ -55,11 +57,32 @@ struct is_unitless<unitless<T, Ratio>> : public std::true_type {};
 template<typename T>
 constexpr bool is_unitless_v = is_unitless<T>::value;
 
+template<typename T>
+struct is_number : public std::false_type {};
+
+template<typename T, typename Ratio, typename Unit>
+struct is_number<number<T, Ratio, Unit>> : public std::true_type {};
+
+template<typename T>
+constexpr bool is_number_v = is_number<T>::value;
+
 template<typename Unit>
 struct unit_metadata
 {
   constexpr static const char* label = "?";
 };
+
+template<>
+struct unit_metadata<unitless_unit>
+{
+  constexpr static const char* label = "";
+};
+
+template<typename T, typename U>
+constexpr bool is_value_constructible = !is_number_v<std::decay_t<U>> && std::is_constructible_v<T, U>;
+
+template<typename T, typename U>
+constexpr bool is_value_assignable = !is_number_v<std::decay_t<U>> && std::is_assignable_v<T&, U>;
 
 template<typename T, typename Ratio, typename Unit>
 class number
@@ -70,53 +93,120 @@ public:
   using value_type = T;
   using ratio = Ratio;
   using unit = Unit;
-  using _type = number<T, Ratio, Unit>;
 
   number() = default;
 
-  template<typename U, typename = std::enable_if_t<std::is_constructible_v<T, U> && !is_unitless_v<_type>>>
+  template<typename U, typename = std::enable_if_t<is_value_constructible<value_type, U> && !is_unitless_v<number>>>
   constexpr explicit number(U&& value)
     : _value(std::forward<U>(value))
   {}
 
-  template<typename U, typename = std::enable_if_t<std::is_constructible_v<T, U> && is_unitless_v<_type>>, typename = void>
+  template<typename U, typename = std::enable_if_t<is_value_constructible<value_type, U> && is_unitless_v<number>>, typename = void>
   constexpr number(U&& value)
     : _value(std::forward<U>(value))
-  {}
+  {
+    static_assert(is_value_constructible<value_type, U> && is_unitless_v<number>);
+  }
 
   number(const number& other) = default;
   number& operator=(const number& other) = default;
   number(number&& other) = default;
   number& operator=(number&& other) = default;
 
-  template<typename U, typename = std::enable_if_t<std::is_assignable_v<T&, U>>>
+  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
   number& operator=(U&& value)
   {
     _value = std::forward<U>(value);
     return *this;
   }
 
-  constexpr const T& value() const { return _value; }
+  constexpr value_type& value() { return _value; }
+  constexpr const value_type& value() const { return _value; }
 
-  constexpr explicit operator T&() { return value(); }
-  constexpr explicit operator const T&() const { return value(); }
-
-  template<typename U, typename DestRatio, typename DestUnit, typename = std::enable_if_t<std::is_constructible_v<U, T> && is_convertible_v<T, Unit, DestUnit>>>
+  template<typename U, typename DestRatio, typename DestUnit, typename = std::enable_if_t<std::is_constructible_v<U, value_type> && is_convertible_v<value_type, unit, DestUnit>>>
   constexpr operator number<U, DestRatio, DestUnit>() const
   {
-    return number<U, DestRatio, DestUnit>(apply_ratio<std::ratio_divide<Ratio, DestRatio>>(converter<Unit, DestUnit>::convert(_value)));
+    return number<U, DestRatio, DestUnit>(apply_ratio<std::ratio_divide<ratio, DestRatio>>(converter<unit, DestUnit>::convert(_value)));
   }
 
-  //a += b
-  //a -= b
-  //a *= b
-  //a /= b
+  template<typename U, typename = std::enable_if_t<!is_number_v<std::decay_t<U>> && std::is_constructible_v<U, value_type>>>
+  constexpr explicit operator U() const
+  {
+    return _value;
+  }
+
+  constexpr number& operator+=(const number& r)
+  {
+    _value += r.value();
+    return *this;
+  }
+
+  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
+  constexpr number& operator+=(U&& r)
+  {
+    _value += std::forward<U>(r);
+    return *this;
+  }
+
+  template<typename = std::enable_if_t<!std::is_same_v<number, unitless<value_type, ratio>>>>
+  constexpr number& operator+=(const unitless<value_type, ratio>& r)
+  {
+    _value += r.value();
+    return *this;
+  }
+
+  constexpr number& operator-=(const number& r)
+  {
+    _value -= r.value();
+    return *this;
+  }
+
+  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
+  constexpr number& operator-=(U&& r)
+  {
+    _value -= std::forward<U>(r);
+    return *this;
+  }
+
+  template<typename = std::enable_if_t<!std::is_same_v<number, unitless<value_type, ratio>>>>
+  constexpr number& operator-=(const unitless<value_type, ratio>& r)
+  {
+    _value -= r.value();
+    return *this;
+  }
+
+  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
+  constexpr number& operator*=(U&& r)
+  {
+    _value *= std::forward<U>(r);
+    return *this;
+  }
+
+  constexpr number& operator*=(const unitless<value_type, ratio>& r)
+  {
+    _value *= r.value();
+    return *this;
+  }
+
+  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
+  constexpr number& operator/=(U&& r)
+  {
+    _value /= std::forward<U>(r);
+    return *this;
+  }
+
+  constexpr number& operator/=(const unitless<value_type, ratio>& r)
+  {
+    _value /= r.value();
+    return *this;
+  }
+
   //++a
   //--a
   //a++
   //a--
-  constexpr auto operator+() const { return number<decltype(+_value), Ratio, Unit>(+_value); }
-  constexpr auto operator-() const { return number<decltype(-_value), Ratio, Unit>(-_value); }
+  constexpr auto operator+() const { return number<decltype(+_value), ratio, unit>(+_value); }
+  constexpr auto operator-() const { return number<decltype(-_value), ratio, unit>(-_value); }
   //T T::operator+(const T2 &b) const;
   //T T::operator-(const T2 &b) const;
   //T T::operator*(const T2 &b) const;
@@ -130,5 +220,5 @@ public:
   constexpr auto operator>=(const number& other) const { return value() >= other.value(); }
 
 private:
-  T _value;
+  value_type _value;
 };

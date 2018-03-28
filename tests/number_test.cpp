@@ -95,3 +95,61 @@ TEST_CASE("Comparaison")
   REQUIRE(kilo >= ref);
   REQUIRE(kilo >= milli);
 }
+
+static_assert(!is_unitless_v<first_number<std::milli>>);
+
+TEST_CASE("Unitless")
+{
+  unitless<double, std::ratio<1>> unit(3.0);
+  unitless<double, std::kilo> kilo = unit;
+  REQUIRE(kilo.value() == 3e-3);
+
+  unitless<double, std::milli> milli = kilo;
+  REQUIRE(milli.value() == 3e3);
+
+  milli = 13;
+  unit = milli;
+  REQUIRE(unit.value() == 13e-3);
+}
+
+static_assert(!is_value_constructible<double, number<double, std::ratio<1, 1>, type_list<>>>);
+
+TEST_CASE("Assignments")
+{
+  first_number<std::milli> milli(1000);
+  unitless<double> uless(10);
+
+  milli += milli;
+  REQUIRE(milli.value() == 2000);
+  milli -= milli;
+  REQUIRE(milli.value() == 0);
+  milli = 1000;
+
+  milli += 3;
+  REQUIRE(milli.value() == 1003);
+  uless += 1;
+  REQUIRE(uless.value() == 11);
+  milli += uless;
+  REQUIRE(milli.value() == 12003);
+
+  milli -= uless;
+  REQUIRE(milli.value() == 1003);
+  uless -= 1;
+  REQUIRE(uless.value() == 10);
+  milli -= 3;
+  REQUIRE(milli.value() == 1000);
+
+  milli *= 2;
+  REQUIRE(milli.value() == 2000);
+  uless *= 0.0003;
+  REQUIRE(uless.value() == Approx(0.003));
+  milli *= uless;
+  REQUIRE(milli.value() == Approx(6000));
+
+  milli /= uless;
+  REQUIRE(milli.value() == Approx(2000));
+  uless /= 0.0003;
+  REQUIRE(uless.value() == 10);
+  milli /= 2;
+  REQUIRE(milli.value() == 1000);
+}
