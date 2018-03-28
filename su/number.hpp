@@ -14,7 +14,7 @@ struct is_ratio<std::ratio<Num, Den>> : public std::true_type {};
 template<typename T>
 constexpr bool is_ratio_v = is_ratio<T>::value;
 
-template<typename T, typename Ratio>
+template<typename Ratio, typename T>
 constexpr auto apply_ratio(const T& value)
 {
   static_assert(is_ratio_v<Ratio>, "Ratio must be of type std::ratio");
@@ -55,6 +55,12 @@ struct is_unitless<unitless<T, Ratio>> : public std::true_type {};
 template<typename T>
 constexpr bool is_unitless_v = is_unitless<T>::value;
 
+template<typename Unit>
+struct unit_metadata
+{
+  constexpr static const char* label = "?";
+};
+
 template<typename T, typename Ratio, typename Unit>
 class number
 {
@@ -65,6 +71,8 @@ public:
   using ratio = Ratio;
   using unit = Unit;
   using _type = number<T, Ratio, Unit>;
+
+  number() = default;
 
   template<typename U, typename = std::enable_if_t<std::is_constructible_v<T, U> && !is_unitless_v<_type>>>
   constexpr explicit number(U&& value)
@@ -94,10 +102,32 @@ public:
   constexpr explicit operator const T&() const { return value(); }
 
   template<typename U, typename DestRatio, typename DestUnit, typename = std::enable_if_t<std::is_constructible_v<U, T> && is_convertible_v<T, Unit, DestUnit>>>
-  constexpr operator number<U, DestRatio, DestUnit>()
+  constexpr operator number<U, DestRatio, DestUnit>() const
   {
-      return number<U, DestRatio, DestUnit>(apply_ratio<T, std::ratio_divide<Ratio, DestRatio>>(converter<Unit, DestUnit>::template convert<T>(_value)));
+    return number<U, DestRatio, DestUnit>(apply_ratio<std::ratio_divide<Ratio, DestRatio>>(converter<Unit, DestUnit>::convert(_value)));
   }
+
+  //a += b
+  //a -= b
+  //a *= b
+  //a /= b
+  //++a
+  //--a
+  //a++
+  //a--
+  constexpr auto operator+() const { return number<decltype(+_value), Ratio, Unit>(+_value); }
+  constexpr auto operator-() const { return number<decltype(-_value), Ratio, Unit>(-_value); }
+  //T T::operator+(const T2 &b) const;
+  //T T::operator-(const T2 &b) const;
+  //T T::operator*(const T2 &b) const;
+  //T T::operator/(const T2 &b) const;
+
+  constexpr auto operator==(const number& other) const { return value() == other.value(); }
+  constexpr auto operator!=(const number& other) const { return value() != other.value(); }
+  constexpr auto operator<(const number& other) const { return value() < other.value(); }
+  constexpr auto operator>(const number& other) const { return value() > other.value(); }
+  constexpr auto operator<=(const number& other) const { return value() <= other.value(); }
+  constexpr auto operator>=(const number& other) const { return value() >= other.value(); }
 
 private:
   T _value;

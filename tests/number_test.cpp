@@ -1,5 +1,6 @@
 #include "number.hpp"
 #include "catch.hpp"
+#include "ionumber.hpp"
 
 using number_type_1 = number<double, std::ratio<1>, struct numberType1Unit>;
 
@@ -66,4 +67,31 @@ TEST_CASE("Unit and ratio conversion")
   second = 0.5;
   first = second;
   REQUIRE(first.value() == 0.5e6 / 13);
+}
+
+static_assert(std::is_same_v<typename decltype(+std::declval<number<char, std::ratio<1>, struct tmp_unit>>())::value_type, decltype(+std::declval<char>())>);
+
+TEST_CASE("Unary operators")
+{
+  REQUIRE((+first_number<>(-2)).value() == -2);
+  REQUIRE((-first_number<>(-2)).value() == 2);
+}
+
+TEST_CASE("Comparaison")
+{
+  first_number<std::milli> milli(1000);
+  first_number<std::kilo> kilo = milli;
+  second_number<> ref(1);
+
+  REQUIRE(milli == milli);
+  REQUIRE(milli == kilo);
+  REQUIRE(kilo == milli);
+  REQUIRE(kilo != ref);
+  REQUIRE(ref != kilo);
+  REQUIRE(ref < kilo);
+  REQUIRE(kilo > ref);
+  REQUIRE(ref <= kilo);
+  REQUIRE(kilo <= milli);
+  REQUIRE(kilo >= ref);
+  REQUIRE(kilo >= milli);
 }

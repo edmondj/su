@@ -3,6 +3,7 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/type_list.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/su.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/number.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/ionumber.hpp
 )
 
 add_custom_target(su_headers SOURCES ${HEADERS}) #Trick to show it up in IDE
