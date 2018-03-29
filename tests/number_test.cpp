@@ -21,14 +21,14 @@ template<>
 struct converter<first_number<>::unit, second_number<>::unit>
 {
   template<typename T>
-  constexpr static T convert(const T& value) { return value * 13; }
+  constexpr static T convert(const T& value) { return value * 2; }
 };
 
 template<>
 struct converter<second_number<>::unit, first_number<>::unit>
 {
   template<typename T>
-  constexpr static T convert(const T& value) { return value / 13; }
+  constexpr static T convert(const T& value) { return value / 2; }
 };
 
 static_assert(std::is_convertible_v<first_number<>, second_number<>> && std::is_convertible_v<second_number<>, first_number<>>);
@@ -51,22 +51,22 @@ TEST_CASE("Unit conversion")
 {
   first_number<> first(42);
   second_number<> second = first;
-  REQUIRE(second.value() == 42 * 13);
+  REQUIRE(second.value() == 84);
 
   second = second_number<>(1337);
   first = second;
-  REQUIRE(first.value() == 1337.0 / 13.0);
+  REQUIRE(first.value() == 668.5);
 }
 
 TEST_CASE("Unit and ratio conversion")
 {
   first_number<std::milli> first{ 2.0 };
   second_number<std::kilo> second = first;
-  REQUIRE(second.value() == 2e-6 * 13);
+  REQUIRE(second.value() == 4e-6);
 
   second = 0.5;
   first = second;
-  REQUIRE(first.value() == 0.5e6 / 13);
+  REQUIRE(first.value() == 0.25e6);
 }
 
 static_assert(std::is_same_v<typename decltype(+std::declval<number<char, std::ratio<1>, struct tmp_unit>>())::value_type, decltype(+std::declval<char>())>);
@@ -159,4 +159,48 @@ TEST_CASE("Assignments")
   REQUIRE((milli++).value() == 1000);
   REQUIRE((milli--).value() == 1001);
   REQUIRE(milli.value() == 1000);
+}
+
+TEST_CASE("Binary op")
+{
+  first_number<std::kilo> kilo(0.1);
+  second_number<std::milli> milli(1000);
+
+  static_assert(std::is_same_v<decltype(kilo), decltype(kilo + milli)>);
+  REQUIRE((kilo + milli).value() == 0.1005);
+  REQUIRE(kilo.value() == 0.1);
+  REQUIRE(milli.value() == 1000);
+
+  static_assert(std::is_same_v<decltype(milli), decltype(milli + kilo)>);
+  REQUIRE((milli + kilo).value() == 201000);
+  REQUIRE(kilo.value() == 0.1);
+  REQUIRE(milli.value() == 1000);
+
+  static_assert(std::is_same_v<decltype(kilo), decltype(kilo + 3)>);
+  REQUIRE((kilo + 3).value() == 3.1);
+  REQUIRE(kilo.value() == 0.1);
+
+  static_assert(std::is_same_v<decltype(kilo), decltype(kilo + unitless<double>(3))>);
+  REQUIRE((kilo + unitless<double>(3)).value() == Approx(0.103));
+  REQUIRE(kilo.value() == 0.1);
+
+  static_assert(std::is_same_v<decltype(kilo), decltype(3 + kilo)>);
+  REQUIRE((3 + kilo).value() == 3.1);
+  REQUIRE(kilo.value() == 0.1);
+
+  static_assert(std::is_same_v<decltype(kilo), decltype(unitless<double>(3) + kilo)>);
+  REQUIRE((unitless<double>(3) + kilo).value() == Approx(0.103));
+  REQUIRE(kilo.value() == 0.1);
+
+  static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(3 + unitless<double, std::kilo>(3))>);
+  REQUIRE((3 + unitless<double, std::kilo>(3)).value() == 6);
+
+  static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(unitless<double, std::kilo>(3) + 3)>);
+  REQUIRE((unitless<double, std::kilo>(3) + 3).value() == 6);
+
+  static_assert(std::is_same_v<unitless<double>, decltype(unitless<double>(3) + unitless<double, std::kilo>(3))>);
+  REQUIRE((unitless<double>(3) + unitless<double, std::kilo>(3)).value() == 3003);
+
+  static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(unitless<double, std::kilo>(3) + unitless<double>(3))>);
+  REQUIRE((unitless<double, std::kilo>(3) + unitless<double>(3)).value() == 3.003);
 }
