@@ -152,4 +152,11 @@ TEST_CASE("Assignments")
   REQUIRE(uless.value() == 10);
   milli /= 2;
   REQUIRE(milli.value() == 1000);
+
+  REQUIRE((++milli).value() == 1001);
+  REQUIRE((--milli).value() == 1000);
+
+  REQUIRE((milli++).value() == 1000);
+  REQUIRE((milli--).value() == 1001);
+  REQUIRE(milli.value() == 1000);
 }

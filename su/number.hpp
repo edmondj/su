@@ -141,13 +141,6 @@ public:
     return *this;
   }
 
-  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
-  constexpr number& operator+=(U&& r)
-  {
-    _value += std::forward<U>(r);
-    return *this;
-  }
-
   template<bool condition = !std::is_same_v<number, unitless<value_type, ratio>>, typename = std::enable_if_t<condition>>
   constexpr number& operator+=(const unitless<value_type, ratio>& r)
   {
@@ -161,24 +154,10 @@ public:
     return *this;
   }
 
-  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
-  constexpr number& operator-=(U&& r)
-  {
-    _value -= std::forward<U>(r);
-    return *this;
-  }
-
   template<bool condition = !std::is_same_v<number, unitless<value_type, ratio>>, typename = std::enable_if_t<condition>>
   constexpr number& operator-=(const unitless<value_type, ratio>& r)
   {
     _value -= r.value();
-    return *this;
-  }
-
-  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
-  constexpr number& operator*=(U&& r)
-  {
-    _value *= std::forward<U>(r);
     return *this;
   }
 
@@ -188,25 +167,41 @@ public:
     return *this;
   }
 
-  template<typename U, typename = std::enable_if_t<is_value_assignable<value_type, U>>>
-  constexpr number& operator/=(U&& r)
-  {
-    _value /= std::forward<U>(r);
-    return *this;
-  }
-
   constexpr number& operator/=(const unitless<value_type, ratio>& r)
   {
     _value /= r.value();
     return *this;
   }
 
-  //++a
-  //--a
-  //a++
-  //a--
+  constexpr number& operator++()
+  {
+    ++_value;
+    return *this;
+  }
+
+  constexpr number& operator--()
+  {
+    --_value;
+    return *this;
+  }
+
+  constexpr number operator++(int)
+  {
+    number sent(_value);
+    ++_value;
+    return sent;
+  }
+
+  constexpr number operator--(int)
+  {
+    number sent(_value);
+    --_value;
+    return sent;
+  }
+
   constexpr auto operator+() const { return number<decltype(+_value), ratio, unit>(+_value); }
   constexpr auto operator-() const { return number<decltype(-_value), ratio, unit>(-_value); }
+
   //T T::operator+(const T2 &b) const;
   //T T::operator-(const T2 &b) const;
   //T T::operator*(const T2 &b) const;
