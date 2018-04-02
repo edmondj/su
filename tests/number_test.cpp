@@ -19,19 +19,24 @@ using first_number = number<double, Ratio, struct first_unit>;
 template<typename Ratio = std::ratio<1>>
 using second_number = number<double, Ratio, struct second_unit>;
 
-template<>
-struct converter<first_number<>::unit, second_number<>::unit>
+namespace su
 {
-  template<typename T>
-  constexpr static T convert(const T& value) { return value * 2; }
-};
+  
+  template<>
+  struct converter<first_number<>::unit, second_number<>::unit>
+  {
+    template<typename T>
+    constexpr static T convert(const T& value) { return value * 2; }
+  };
 
-template<>
-struct converter<second_number<>::unit, first_number<>::unit>
-{
-  template<typename T>
-  constexpr static T convert(const T& value) { return value / 2; }
-};
+  template<>
+  struct converter<second_number<>::unit, first_number<>::unit>
+  {
+    template<typename T>
+    constexpr static T convert(const T& value) { return value / 2; }
+  };
+
+}
 
 static_assert(std::is_convertible_v<first_number<>, second_number<>> && std::is_convertible_v<second_number<>, first_number<>>);
 
