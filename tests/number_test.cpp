@@ -161,7 +161,7 @@ TEST_CASE("Assignments")
   REQUIRE(milli.value() == 1000);
 }
 
-TEST_CASE("Binary op")
+TEST_CASE("Binary add")
 {
   first_number<std::kilo> kilo(0.1);
   second_number<std::milli> milli(1000);
@@ -203,4 +203,40 @@ TEST_CASE("Binary op")
 
   static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(unitless<double, std::kilo>(3) + unitless<double>(3))>);
   REQUIRE((unitless<double, std::kilo>(3) + unitless<double>(3)).value() == 3.003);
+}
+
+TEST_CASE("Binary sub")
+{
+  using kilo = first_number<std::kilo>;
+  using milli = second_number<std::milli>;
+
+  static_assert(std::is_same_v<kilo, decltype(std::declval<kilo>() - std::declval<milli>())>);
+  REQUIRE((kilo(0.1) - milli(1000)).value() == 0.0995);
+
+  static_assert(std::is_same_v<milli, decltype(std::declval<milli>() - std::declval<kilo>())>);
+  REQUIRE((milli(1000) - kilo(1)).value() == -1999000);
+
+  static_assert(std::is_same_v<kilo, decltype(std::declval<kilo>() - 3)>);
+  REQUIRE((kilo(0.1) - 3).value() == -2.9);
+
+  static_assert(std::is_same_v<kilo, decltype(kilo(0.1) - unitless<double>(3))>);
+  REQUIRE((kilo(0.1) - unitless<double>(3)).value() == 0.097);
+
+  static_assert(std::is_same_v<kilo, decltype(3 - kilo(0.1))>);
+  REQUIRE((3 - kilo(0.1)).value() == 2.9);
+
+  static_assert(std::is_same_v<kilo, decltype(unitless<double>(3) - kilo(0.1))>);
+  REQUIRE((unitless<double>(3) - kilo(0.1)).value() == -0.097);
+
+  static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(3 - unitless<double, std::kilo>(3))>);
+  REQUIRE((3 - unitless<double, std::kilo>(3)).value() == 0);
+
+  static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(unitless<double, std::kilo>(3) - 3)>);
+  REQUIRE((unitless<double, std::kilo>(3) - 3).value() == 0);
+
+  static_assert(std::is_same_v<unitless<double>, decltype(unitless<double>(3) - unitless<double, std::kilo>(3))>);
+  REQUIRE((unitless<double>(3) - unitless<double, std::kilo>(3)).value() == -2997);
+
+  static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(unitless<double, std::kilo>(3) - unitless<double>(3))>);
+  REQUIRE((unitless<double, std::kilo>(3) - unitless<double>(3)).value() == 2.997);
 }

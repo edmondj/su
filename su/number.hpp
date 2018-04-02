@@ -219,7 +219,23 @@ public:
     return number<U, Ratio2, Unit2>(apply_ratio<std::ratio_divide<ratio, Ratio2>>(value()) + r.value());
   }
 
-  //T T::operator-(const T2 &b) const;
+  constexpr number operator-(const number& r) const
+  {
+    return number(value() - r.value());
+  }
+
+  template<bool condition = !is_unitless_v<number>, typename = std::enable_if_t<condition>>
+  constexpr number operator-(const unitless<value_type, ratio>& r) const
+  {
+    return number(value() - r.value());
+  }
+
+  template<typename U, typename Ratio2, typename Unit2, bool condition = is_unitless_v<number> && !std::is_same_v<Unit2, unitless_unit>, typename = std::enable_if_t<condition>>
+  constexpr number<U, Ratio2, Unit2> operator-(const number<U, Ratio2, Unit2>& r) const
+  {
+    return number<U, Ratio2, Unit2>(apply_ratio<std::ratio_divide<ratio, Ratio2>>(value()) - r.value());
+  }
+
   //T T::operator*(const T2 &b) const;
   //T T::operator/(const T2 &b) const;
 
@@ -238,4 +254,10 @@ template<typename U, typename T, typename Ratio, typename Unit, typename = std::
 constexpr number<T, Ratio, Unit> operator+(U&& l, const number<T, Ratio, Unit>& r)
 {
   return number<T, Ratio, Unit>(std::forward<U>(l) + r.value());
+}
+
+template<typename U, typename T, typename Ratio, typename Unit, typename = std::enable_if_t<is_value_constructible<T, U>>>
+constexpr number<T, Ratio, Unit> operator-(U&& l, const number<T, Ratio, Unit>& r)
+{
+  return number<T, Ratio, Unit>(std::forward<U>(l) - r.value());
 }
