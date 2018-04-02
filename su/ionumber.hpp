@@ -3,18 +3,8 @@
 #include "number.hpp"
 #include <iostream>
 
-//template<typename Ratio, typename CharT, typename Traits>
-//std::basic_ostream<CharT, Traits>& display_ratio(std::basic_ostream<CharT, Traits>& out)
-//{
-//  static_assert(is_ratio_v<Ratio>);
-//  return out << '{' << Ratio::num << '/' << Ratio::den << '}';
-//}
-//
-//template<typename CharT, typename Traits>
-//std::basic_ostream<CharT, Traits>& display_ratio<std::kilo, CharT, Traits>(std::basic_ostream<CharT, Traits>& out)
-//{
-//  return out << 'k';
-//}
+namespace su
+{
 
 template<typename Ratio, typename CharT, typename Traits>
 constexpr auto display_ratio = [](std::basic_ostream<CharT, Traits>& out) -> std::basic_ostream<CharT, Traits>&
@@ -42,8 +32,10 @@ DISPLAY_RATIO(std::ratio<1>)
   return out;
 };
 
+}
+
 template<typename CharT, typename Traits, typename T, typename Ratio, typename Unit>
-std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& out, const number<T, Ratio, Unit>& n)
+std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& out, const su::number<T, Ratio, Unit>& n)
 {
-  return out << n.value() << display_ratio<Ratio, CharT, Traits> << unit_metadata<Unit>::label;
+  return out << n.value() << su::display_ratio<Ratio, CharT, Traits> << su::unit_metadata<Unit>::label;
 }

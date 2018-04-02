@@ -2,6 +2,8 @@
 #include "catch.hpp"
 #include "ionumber.hpp"
 
+using namespace su;
+
 using number_type_1 = number<double, std::ratio<1>, struct numberType1Unit>;
 
 static_assert(std::is_constructible_v<number_type_1, double>);

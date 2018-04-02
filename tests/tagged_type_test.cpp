@@ -2,7 +2,7 @@
 #include <functional>
 #include <utility>
 
-using type1 = tagged_type<int, struct type1tag>;
+using type1 = su::tagged_type<int, struct type1tag>;
 
 static_assert(std::is_constructible_v<type1, int>);
 static_assert(!std::is_invocable_v<void(*)(type1), int>);
