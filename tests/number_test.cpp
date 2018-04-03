@@ -103,7 +103,7 @@ TEST_CASE("Comparaison")
   REQUIRE(kilo >= milli);
 }
 
-static_assert(!is_unitless_v<first_number<std::milli>>);
+static_assert(!is_unitless<first_number<std::milli>>);
 
 TEST_CASE("Unitless")
 {
