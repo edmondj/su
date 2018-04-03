@@ -7,7 +7,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(warnings "-Wall" "-Wextra" "-Wpedantic" "-Werror")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(warnings "-Wall" "-Weverything" "-pedantic" "-Werror")
+  set(warnings "-Wall" "-Wextra" "-Wpedantic" "-Werror")
 endif()
 
 add_compile_options(${warnings})
