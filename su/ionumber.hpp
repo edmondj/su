@@ -9,7 +9,7 @@ namespace su
 template<typename Ratio, typename CharT, typename Traits>
 constexpr auto display_ratio = [](std::basic_ostream<CharT, Traits>& out) -> std::basic_ostream<CharT, Traits>&
 {
-  static_assert(is_ratio_v<Ratio>);
+  static_assert(is_ratio<Ratio>);
   return out << '{' << Ratio::num << '/' << Ratio::den << '}';
 };
 
