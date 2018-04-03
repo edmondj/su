@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.8)
 
 project(su)
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set(warnings "/WX" "/W4")
-elseif(GCC)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(warnings "-Wall" "-Wextra" "-Wpedantic" "-Werror")
-elseif(Clang)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(warnings "-Wall" "-Weverything" "-pedantic" "-Werror")
 endif()
 
