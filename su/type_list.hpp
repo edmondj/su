@@ -39,6 +39,9 @@ namespace su
     template<typename ToRemove, typename From>
     struct remove : public type_holder<From> {};
 
+    template<typename ToRemove>
+    struct remove<ToRemove, ToRemove> : public type_holder<type_list<>> {};
+
     template<typename ToRemove, typename Head, typename... Tail>
     struct remove<ToRemove, type_list<Head, Tail...>> : public type_holder<su::concat_types<Head, held_type<remove<ToRemove, type_list<Tail...>>>>> {};
 

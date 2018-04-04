@@ -16,3 +16,5 @@ static_assert(std::is_same_v<su::type_list<int, short>, su::mul_type<su::type_li
 static_assert(std::is_same_v<su::type_list<int, short>, su::mul_type<su::type_list<int>, su::type_list<short>>>);
 static_assert(std::is_same_v<su::composed_unit<su::type_list<int, short>, char>, su::mul_type<su::composed_unit<int, char>, short>>);
 static_assert(std::is_same_v<su::composed_unit<su::type_list<int, short, float>, char>, su::mul_type<su::composed_unit<su::type_list<int, short>, char>, float>>);
+
+static_assert(std::is_same_v<su::div_type<int, int>, su::type_list<>>);

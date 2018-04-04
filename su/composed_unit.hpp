@@ -74,7 +74,7 @@ namespace su
   namespace detail
   {
     template<typename L, typename R>
-    struct div_type : public type_holder<composed_unit<L, R>> {};
+    struct div_type : public simplify_type<composed_unit<L, R>> {};
 
     template<typename LNum, typename LDen, typename R>
     struct div_type<composed_unit<LNum, LDen>, R> : public simplify_type<composed_unit<LNum, su::concat_types<LDen, R>>> {};
