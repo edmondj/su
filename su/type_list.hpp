@@ -19,6 +19,15 @@ namespace su
 
   namespace detail
   {
+    template<typename T>
+    struct is_type_list : public std::false_type {};
+
+    template<typename... T>
+    struct is_type_list<type_list<T...>> : public std::true_type {};
+  }
+
+  namespace detail
+  {
     template<typename L, typename R>
     struct concat_types : public type_holder<type_list<L, R>> {};
 
@@ -38,9 +47,6 @@ namespace su
   {
     template<typename ToRemove, typename From>
     struct remove : public type_holder<From> {};
-
-    template<typename ToRemove>
-    struct remove<ToRemove, ToRemove> : public type_holder<type_list<>> {};
 
     template<typename ToRemove, typename Head, typename... Tail>
     struct remove<ToRemove, type_list<Head, Tail...>> : public type_holder<su::concat_types<Head, held_type<remove<ToRemove, type_list<Tail...>>>>> {};
