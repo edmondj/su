@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type_list.hpp"
+#include "composed_unit.hpp"
 #include <ratio>
 #include <cstdint>
 #include <utility>
@@ -80,13 +80,6 @@ namespace su
 
   template<typename T, typename U>
   constexpr bool is_value_assignable = !is_number<std::decay_t<U>> && std::is_assignable_v<T&, U>;
-
-  template<typename Num, typename Den>
-  struct composed_unit
-  {
-    using num = Num;
-    using den = Den;
-  };
 
   template<typename T, typename Ratio, typename Unit>
   class number

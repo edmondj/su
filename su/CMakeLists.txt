@@ -1,6 +1,7 @@
 set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/tagged_type.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/type_list.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/composed_unit.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/su.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/number.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/ionumber.hpp
