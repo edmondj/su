@@ -15,7 +15,6 @@ static_assert(std::is_invocable_v<void(*)(unitless<double>), double>);
 template<typename Ratio = std::ratio<1>>
 using first_number = number<double, Ratio, struct first_unit>;
 
-
 template<typename Ratio = std::ratio<1>>
 using second_number = number<double, Ratio, struct second_unit>;
 
@@ -39,6 +38,11 @@ namespace su
 }
 
 static_assert(std::is_convertible_v<first_number<>, second_number<>> && std::is_convertible_v<second_number<>, first_number<>>);
+
+static_assert(std::is_constructible_v<
+  su::number<double, std::ratio<1>, su::composed_unit<su::type_list<int, short, float>, su::type_list<char, double>>>,
+  su::number<double, std::ratio<1>, su::composed_unit<su::type_list<float, int, short>, su::type_list<double, char>>>
+>);
 
 TEST_CASE("Same unit ratio conversion")
 {

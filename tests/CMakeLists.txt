@@ -3,6 +3,7 @@ set(SRC
 	main.cpp
   tagged_type_test.cpp
   type_list_test.cpp
+  composed_unit_test.cpp
   number_test.cpp
 )
 

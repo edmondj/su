@@ -21,11 +21,18 @@ namespace su
     return value * Ratio::num / Ratio::den;
   }
 
-  template<typename SrcUnit, typename DestUnit>
+  template<typename SrcUnit, typename DestUnit, typename = void>
   struct converter {};
 
   template<typename Unit>
   struct converter<Unit, Unit>
+  {
+    template<typename T>
+    static constexpr T convert(const T& value) { return value; }
+  };
+
+  template<typename SrcUnit, typename DestUnit>
+  struct converter<SrcUnit, DestUnit, std::enable_if_t<!std::is_same_v<SrcUnit, DestUnit> && are_equivalent<SrcUnit, DestUnit>>>
   {
     template<typename T>
     static constexpr T convert(const T& value) { return value; }
