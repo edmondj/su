@@ -45,8 +45,8 @@ namespace su
 
   namespace detail
   {
-    template<typename ToRemove, typename From>
-    struct remove : public type_holder<From> {};
+    template<typename ToRemove, typename From, typename = void>
+    struct remove : public std::conditional<std::is_same_v<ToRemove, From>, type_list<>, From> {};
 
     template<typename ToRemove, typename Head, typename... Tail>
     struct remove<ToRemove, type_list<Head, Tail...>> : public type_holder<su::concat_types<Head, held_type<remove<ToRemove, type_list<Tail...>>>>> {};
