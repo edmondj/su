@@ -56,36 +56,36 @@ namespace su
   namespace detail
   {
     template<typename L, typename R>
-    struct mul_type : public type_holder<su::concat_types<L, R>> {};
+    struct mul_unit : public type_holder<su::concat_types<L, R>> {};
 
     template<typename LNum, typename LDen, typename R>
-    struct mul_type<composed_unit<LNum, LDen>, R> : public simplify_type<composed_unit<su::concat_types<LNum, R>, LDen>> {};
+    struct mul_unit<composed_unit<LNum, LDen>, R> : public simplify_type<composed_unit<su::concat_types<LNum, R>, LDen>> {};
 
     template<typename L, typename RNum, typename RDen>
-    struct mul_type<L, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<L, RNum>, RDen>> {};
+    struct mul_unit<L, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<L, RNum>, RDen>> {};
 
     template<typename LNum, typename LDen, typename RNum, typename RDen>
-    struct mul_type<composed_unit<LNum, LDen>, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<LNum, RNum>, su::concat_types<LDen, RDen>>> {};
+    struct mul_unit<composed_unit<LNum, LDen>, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<LNum, RNum>, su::concat_types<LDen, RDen>>> {};
   }
 
   template<typename L, typename R>
-  using mul_type = held_type<detail::mul_type<L, R>>;
+  using mul_unit = held_type<detail::mul_unit<L, R>>;
 
   namespace detail
   {
     template<typename L, typename R>
-    struct div_type : public simplify_type<composed_unit<L, R>> {};
+    struct div_unit : public simplify_type<composed_unit<L, R>> {};
 
     template<typename LNum, typename LDen, typename R>
-    struct div_type<composed_unit<LNum, LDen>, R> : public simplify_type<composed_unit<LNum, su::concat_types<LDen, R>>> {};
+    struct div_unit<composed_unit<LNum, LDen>, R> : public simplify_type<composed_unit<LNum, su::concat_types<LDen, R>>> {};
 
     template<typename L, typename RNum, typename RDen>
-    struct div_type<L, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<L, RDen>, RNum>> {};
+    struct div_unit<L, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<L, RDen>, RNum>> {};
 
     template<typename LNum, typename LDen, typename RNum, typename RDen>
-    struct div_type<composed_unit<LNum, LDen>, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<LNum, RDen>, su::concat_types<LDen, RNum>>> {};
+    struct div_unit<composed_unit<LNum, LDen>, composed_unit<RNum, RDen>> : public simplify_type<composed_unit<su::concat_types<LNum, RDen>, su::concat_types<LDen, RNum>>> {};
   }
 
   template<typename L, typename R>
-  using div_type = held_type<detail::div_type<L, R>>;
+  using div_unit = held_type<detail::div_unit<L, R>>;
 }

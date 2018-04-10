@@ -24,15 +24,8 @@ namespace su
   template<typename SrcUnit, typename DestUnit, typename = void>
   struct converter {};
 
-  template<typename Unit>
-  struct converter<Unit, Unit>
-  {
-    template<typename T>
-    static constexpr T convert(const T& value) { return value; }
-  };
-
   template<typename SrcUnit, typename DestUnit>
-  struct converter<SrcUnit, DestUnit, std::enable_if_t<!std::is_same_v<SrcUnit, DestUnit> && are_equivalent<SrcUnit, DestUnit>>>
+  struct converter<SrcUnit, DestUnit, std::enable_if_t<are_equivalent<SrcUnit, DestUnit>>>
   {
     template<typename T>
     static constexpr T convert(const T& value) { return value; }
@@ -50,6 +43,29 @@ namespace su
   template<typename T, typename SrcUnit, typename DestUnit>
   constexpr bool is_convertible = detail::is_convertible<T, SrcUnit, DestUnit>;
 
+  template<typename Src, typename... Srcs, typename Dest, typename... Dests>
+  struct converter<type_list<Src, Srcs...>, type_list<Dest, Dests...>, std::enable_if_t<sizeof...(Srcs) == sizeof...(Dests) && !are_equivalent<type_list<Src, Srcs...>, type_list<Dest, Dests...>>>>
+  {
+    template<typename T>
+    static constexpr T convert(const T& value)
+    {
+      if constexpr (su::is_convertible<T, Src, Dest>)
+        return converter<type_list<Srcs...>, type_list<Dests...>>::convert(converter<Src, Dest>::convert(value));
+      else
+        return converter<type_list<Src, Srcs...>, type_list<Dests..., Dest>>::convert(value);
+    }
+  };
+
+  template<typename SrcNum, typename SrcDen, typename DestNum, typename DestDen>
+  struct converter<composed_unit<SrcNum, SrcDen>, composed_unit<DestNum, DestDen>, std::enable_if_t<!are_equivalent<composed_unit<SrcNum, SrcDen>, composed_unit<DestNum, DestDen>>>>
+  {
+    template<typename T>
+    static constexpr T convert(const T& value)
+    {
+      return converter<DestDen, SrcDen>::convert(converter<SrcNum, DestNum>::convert(value));
+    }
+  };
+
   using unitless_unit = type_list<>;
 
   template<typename T, typename Ratio, typename Unit>
@@ -57,7 +73,7 @@ namespace su
 
   template<typename T, typename Ratio = std::ratio<1>>
   using unitless = number<T, Ratio, unitless_unit>;
-
+  
   template<typename T>
   constexpr bool is_unitless = false;
 
@@ -217,10 +233,10 @@ namespace su
       return number(value() + r.value());
     }
 
-    template<typename U, typename Ratio2, typename Unit2, bool condition = is_unitless<number> && !std::is_same_v<Unit2, unitless_unit>, typename = std::enable_if_t<condition>>
-    constexpr number<U, Ratio2, Unit2> operator+(const number<U, Ratio2, Unit2>& r) const
+    template<typename U, typename RRatio, typename RUnit, bool condition = is_unitless<number> && !std::is_same_v<RUnit, unitless_unit>, typename = std::enable_if_t<condition>>
+    constexpr number<U, RRatio, RUnit> operator+(const number<U, RRatio, RUnit>& r) const
     {
-      return number<U, Ratio2, Unit2>(apply_ratio<std::ratio_divide<ratio, Ratio2>>(value()) + r.value());
+      return number<U, RRatio, RUnit>(apply_ratio<std::ratio_divide<ratio, RRatio>>(value()) + r.value());
     }
 
     constexpr number operator-(const number& r) const
@@ -234,14 +250,24 @@ namespace su
       return number(value() - r.value());
     }
 
-    template<typename U, typename Ratio2, typename Unit2, bool condition = is_unitless<number> && !std::is_same_v<Unit2, unitless_unit>, typename = std::enable_if_t<condition>>
-    constexpr number<U, Ratio2, Unit2> operator-(const number<U, Ratio2, Unit2>& r) const
+    template<typename U, typename RRatio, typename RUnit, bool condition = is_unitless<number> && !std::is_same_v<RUnit, unitless_unit>, typename = std::enable_if_t<condition>>
+    constexpr number<U, RRatio, RUnit> operator-(const number<U, RRatio, RUnit>& r) const
     {
-      return number<U, Ratio2, Unit2>(apply_ratio<std::ratio_divide<ratio, Ratio2>>(value()) - r.value());
+      return number<U, RRatio, RUnit>(apply_ratio<std::ratio_divide<ratio, RRatio>>(value()) - r.value());
     }
 
-    //T T::operator*(const T2 &b) const;
-    //T T::operator/(const T2 &b) const;
+    template<typename U, typename RRatio, typename RUnit>
+    constexpr auto operator*(const number<U, RRatio, RUnit>& other) const
+    {
+      return number<decltype(_value * other.value()), std::ratio_multiply<ratio, RRatio>, mul_unit<unit, RUnit>>(_value * other.value());
+    };
+
+
+    template<typename U, typename RRatio, typename RUnit>
+    constexpr auto operator/(const number<U, RRatio, RUnit>& other) const
+    {
+      return number<decltype(_value / other.value()), std::ratio_divide<ratio, RRatio>, div_unit<unit, RUnit>>(_value / other.value());
+    };
 
     constexpr auto operator==(const number& other) const { return value() == other.value(); }
     constexpr auto operator!=(const number& other) const { return value() != other.value(); }

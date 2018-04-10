@@ -108,6 +108,7 @@ TEST_CASE("Comparaison")
 }
 
 static_assert(!is_unitless<first_number<std::milli>>);
+static_assert(is_convertible<double, unitless_unit, unitless_unit>);
 
 TEST_CASE("Unitless")
 {
@@ -250,4 +251,19 @@ TEST_CASE("Binary sub")
 
   static_assert(std::is_same_v<unitless<double, std::kilo>, decltype(unitless<double, std::kilo>(3) - unitless<double>(3))>);
   REQUIRE((unitless<double, std::kilo>(3) - unitless<double>(3)).value() == 2.997);
+}
+
+static_assert(is_convertible<double, type_list<first_unit, first_unit, first_unit>, type_list<second_unit, second_unit, second_unit>>);
+static_assert(is_convertible<double, composed_unit<type_list<first_unit, first_unit, first_unit>, type_list<second_unit, second_unit, second_unit>>, composed_unit<type_list<second_unit, second_unit, second_unit>, type_list<first_unit, first_unit, first_unit>>>);
+
+template<typename Ratio = std::ratio<1>>
+using square_first = number<double, Ratio, type_list<first_unit, first_unit>>;
+
+TEST_CASE("Binary mult")
+{
+  square_first<> m = first_number<std::kilo>(0.003) * first_number<std::milli>(4000);
+  REQUIRE(m.value() == 12);
+
+  unitless<double> u = first_number<std::kilo>(0.003) / first_number<std::milli>(4000);
+  REQUIRE(u.value() == 0.75);
 }
