@@ -260,14 +260,13 @@ namespace su
     constexpr auto operator*(const number<U, RRatio, RUnit>& other) const
     {
       return number<decltype(_value * other.value()), std::ratio_multiply<ratio, RRatio>, mul_unit<unit, RUnit>>(_value * other.value());
-    };
-
+    }
 
     template<typename U, typename RRatio, typename RUnit>
     constexpr auto operator/(const number<U, RRatio, RUnit>& other) const
     {
       return number<decltype(_value / other.value()), std::ratio_divide<ratio, RRatio>, div_unit<unit, RUnit>>(_value / other.value());
-    };
+    }
 
     constexpr auto operator==(const number& other) const { return value() == other.value(); }
     constexpr auto operator!=(const number& other) const { return value() != other.value(); }
