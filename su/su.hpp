@@ -6,7 +6,7 @@ namespace su
 {
 #define SU_DECLARE_UNIT(unit) template<typename T, typename Ratio = std::ratio<1>> using unit = su::number<T, Ratio, struct unit ## _unit>;
 
-#define SU_DECLARE_RATIO_UNIT(ratio, unit) template<typename T> using ratio ## unit = unit<T, std:: ## ratio>;
+#define SU_DECLARE_RATIO_UNIT(ratio, unit) template<typename T> using ratio ## unit = unit<T, std:: ratio>;
 
 #define SU_DECLARE_METRIC_UNIT(unit) \
 SU_DECLARE_UNIT(unit) \
