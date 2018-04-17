@@ -37,5 +37,5 @@ DISPLAY_RATIO(std::ratio<1>)
 template<typename CharT, typename Traits, typename T, typename Ratio, typename Unit>
 std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& out, const su::number<T, Ratio, Unit>& n)
 {
-  return out << n.value() << su::display_ratio<Ratio, CharT, Traits> << su::unit_metadata<Unit>::label;
+  return out << n.value() << su::display_ratio<Ratio, CharT, Traits> << su::unit_metadata<Unit>::symbol;
 }

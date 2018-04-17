@@ -5,6 +5,7 @@ set(SRC
   type_list_test.cpp
   composed_unit_test.cpp
   number_test.cpp
+  su_test.cpp
 )
 
 add_executable(tests ${SRC})

@@ -21,15 +21,8 @@ namespace su
     return value * Ratio::num / Ratio::den;
   }
 
-  template<typename SrcUnit, typename DestUnit, typename = void>
-  struct converter {};
-
   template<typename SrcUnit, typename DestUnit>
-  struct converter<SrcUnit, DestUnit, std::enable_if_t<are_equivalent<SrcUnit, DestUnit>>>
-  {
-    template<typename T>
-    static constexpr T convert(const T& value) { return value; }
-  };
+  struct converter;
 
   namespace detail
   {
@@ -43,37 +36,127 @@ namespace su
   template<typename T, typename SrcUnit, typename DestUnit>
   constexpr bool is_convertible = detail::is_convertible<T, SrcUnit, DestUnit>;
 
-  template<typename Src, typename... Srcs, typename Dest, typename... Dests>
-  struct converter<type_list<Src, Srcs...>, type_list<Dest, Dests...>, std::enable_if_t<sizeof...(Srcs) == sizeof...(Dests) && !are_equivalent<type_list<Src, Srcs...>, type_list<Dest, Dests...>>>>
-  {
-    template<typename T>
-    static constexpr T convert(const T& value)
-    {
-      if constexpr (su::is_convertible<T, Src, Dest>)
-        return converter<type_list<Srcs...>, type_list<Dests...>>::convert(converter<Src, Dest>::convert(value));
-      else
-        return converter<type_list<Src, Srcs...>, type_list<Dests..., Dest>>::convert(value);
-    }
-  };
-
-  template<typename SrcNum, typename SrcDen, typename DestNum, typename DestDen>
-  struct converter<composed_unit<SrcNum, SrcDen>, composed_unit<DestNum, DestDen>, std::enable_if_t<!are_equivalent<composed_unit<SrcNum, SrcDen>, composed_unit<DestNum, DestDen>>>>
-  {
-    template<typename T>
-    static constexpr T convert(const T& value)
-    {
-      return converter<DestDen, SrcDen>::convert(converter<SrcNum, DestNum>::convert(value));
-    }
-  };
-
   using unitless_unit = type_list<>;
+
+  template<typename SrcUnit, typename DestUnit>
+  struct converter;
+
+  template<typename Unit>
+  struct unit_metadata
+  {
+    constexpr static const char* symbol = "?";
+  };
+
+  template<>
+  struct unit_metadata<unitless_unit>
+  {
+    constexpr static const char* symbol = "";
+  };
+
+  template<typename Unit>
+  using fallback_unit = typename unit_metadata<Unit>::fallback_unit;
+
+  namespace detail
+  {
+
+    template<typename T>
+    constexpr bool dependant_false = false;
+
+    template<typename T, typename SrcUnit, typename DestUnit, typename = void>
+    struct default_converter
+    {
+      static constexpr auto convert(T&&)
+      {
+        static_assert(!dependant_false<T>, "No known conversion");
+      }
+    };
+
+    template<typename SrcUnit, typename DestUnit>
+    constexpr bool equivalent_convert_condition = su::are_equivalent<SrcUnit, DestUnit> || std::is_same_v<SrcUnit, unitless_unit> || std::is_same_v<DestUnit, unitless_unit>;
+
+    template<typename T, typename SrcUnit, typename DestUnit>
+    struct default_converter<T, SrcUnit, DestUnit, std::enable_if_t<equivalent_convert_condition<SrcUnit, DestUnit>>>
+    {
+      static constexpr auto convert(T&& value)
+      {
+        return std::forward<T>(value);
+      }
+    };
+
+    template<typename T, typename SrcUnit, typename DestUnit>
+    struct default_converter<T, SrcUnit, DestUnit, std::enable_if_t<su::is_convertible<T, fallback_unit<SrcUnit>, DestUnit>>>
+    {
+      using median_unit = fallback_unit<SrcUnit>;
+
+      static constexpr auto convert(T&& value)
+      {
+        return su::converter<median_unit, DestUnit>::convert(su::converter<SrcUnit, median_unit>::convert(std::forward<T>(value)));
+      }
+    };
+
+    template<typename T, typename SrcUnit, typename DestUnit>
+    struct default_converter<T, SrcUnit, DestUnit, std::enable_if_t<su::is_convertible<T, SrcUnit, fallback_unit<DestUnit>>>>
+    {
+      using median_unit = fallback_unit<DestUnit>;
+
+      template<typename T>
+      static constexpr auto convert(T&& value)
+      {
+        return su::converter<median_unit, DestUnit>::convert(su::converter<SrcUnit, median_unit>::convert(std::forward<T>(value)));
+      }
+    };
+
+    template<typename T, typename SrcUnit, typename DestUnit>
+    struct default_converter<T, SrcUnit, DestUnit, std::enable_if_t<
+      !equivalent_convert_condition<SrcUnit, DestUnit>
+      && su::is_type_list<SrcUnit>
+      && su::is_type_list<DestUnit>
+      && su::type_list_size<SrcUnit> == su::type_list_size<DestUnit>
+      && (su::type_list_size<SrcUnit> > 0)>>
+    {
+      using SrcHead = su::type_list_head<SrcUnit>;
+      using DestHead = su::type_list_head<DestUnit>;
+      using DestTail = su::remove_type<DestHead, DestUnit>;
+
+      static constexpr auto convert(T&& value)
+      {
+        if constexpr (su::is_convertible<T, SrcHead, DestHead>)
+          return converter<su::remove_type<SrcHead, SrcUnit>, DestTail>::convert(converter<SrcHead, DestHead>::convert(std::forward<T>(value)));
+        else
+          return converter<SrcUnit, concat_types<DestTail, DestHead>>::convert(std::forward<T>(value));
+      }
+    };
+
+    template<typename T, typename SrcUnit, typename DestUnit>
+    struct default_converter<T, SrcUnit, DestUnit, std::enable_if_t<
+      !equivalent_convert_condition<SrcUnit, DestUnit>
+      && su::is_composed<SrcUnit>
+      && su::is_composed<DestUnit>>>
+    {
+      static constexpr auto convert(T&& value)
+      {
+        return converter<typename DestUnit::den, typename SrcUnit::den>::convert(converter<typename SrcUnit::num, typename DestUnit::num>::convert(std::forward<T>(value)));
+      }
+    };
+
+  }
+
+  template<typename SrcUnit, typename DestUnit>
+  struct converter
+  {
+    template<typename T>
+    static constexpr auto convert(T&& value)
+    {
+      return detail::default_converter<T, SrcUnit, DestUnit>::convert(std::forward<T>(value));
+    }
+  };
 
   template<typename T, typename Ratio, typename Unit>
   class number;
 
   template<typename T, typename Ratio = std::ratio<1>>
   using unitless = number<T, Ratio, unitless_unit>;
-  
+
   template<typename T>
   constexpr bool is_unitless = false;
 
@@ -86,17 +169,28 @@ namespace su
   template<typename T, typename Ratio, typename Unit>
   constexpr bool is_number<number<T, Ratio, Unit>> = true;
 
-  template<typename Unit>
-  struct unit_metadata
-  {
-    constexpr static const char* label = "?";
-  };
 
-  template<>
-  struct unit_metadata<unitless_unit>
-  {
-    constexpr static const char* label = "";
-  };
+  //template<typename T, typename SrcUnit, typename DestUnit>
+  //struct converter<T, SrcUnit, DestUnit, std::enable_if_t<!std::is_same_v<fallback_unit<SrcUnit>, DestUnit> && is_convertible<T, fallback_unit<SrcUnit>, DestUnit>>>
+  //{
+  //  using median_unit = fallback_unit<SrcUnit>;
+
+  //  static constexpr T convert(const T& value)
+  //  {
+  //    return converter<T, median_unit, DestUnit>::convert(converter<T, SrcUnit, median_unit>::convert(value));
+  //  }
+  //};
+
+  //template<typename T, typename SrcUnit, typename DestUnit>
+  //struct converter<T, SrcUnit, DestUnit, std::enable_if_t<!std::is_same_v<SrcUnit, fallback_unit<DestUnit>> && is_convertible<T, SrcUnit, fallback_unit<DestUnit>>>>
+  //{
+  //  using median_unit = fallback_unit<DestUnit>;
+
+  //  static constexpr T convert(const T& value)
+  //  {
+  //    return converter<T, median_unit, DestUnit>::convert(converter<T, SrcUnit, median_unit>::convert(value));
+  //  }
+  //};
 
   template<typename T, typename U>
   constexpr bool is_value_constructible = !is_number<std::decay_t<U>> && std::is_constructible_v<T, U>;

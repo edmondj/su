@@ -20,19 +20,16 @@ using second_number = number<double, Ratio, struct second_unit>;
 
 namespace su
 {
-  
   template<>
   struct converter<first_number<>::unit, second_number<>::unit>
   {
-    template<typename T>
-    constexpr static T convert(const T& value) { return value * 2; }
+    constexpr static double convert(double value) { return value * 2; }
   };
 
   template<>
   struct converter<second_number<>::unit, first_number<>::unit>
   {
-    template<typename T>
-    constexpr static T convert(const T& value) { return value / 2; }
+    constexpr static double convert(double value) { return value / 2; }
   };
 
 }

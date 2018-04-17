@@ -14,6 +14,18 @@ namespace su
   namespace detail
   {
     template<typename T>
+    struct is_composed : public std::false_type {};
+
+    template<typename Num, typename Den>
+    struct is_composed<composed_unit<Num, Den>> : public std::true_type {};
+  }
+
+  template<typename T>
+  constexpr bool is_composed = detail::is_composed<T>::value;
+
+  namespace detail
+  {
+    template<typename T>
     struct simplify_type : public type_holder<T> {};
 
     template<typename T>
@@ -29,7 +41,7 @@ namespace su
     struct inner_simplify_type<Num, type_list<>> : public type_holder<Num> {};
 
     template<typename Num, typename Den>
-    struct simplify_type<composed_unit<Num, Den>> : public inner_simplify_type<held_type<simplify_type<su::remove<Den, Num>>>, held_type<simplify_type<su::remove<Num, Den>>>> {};
+    struct simplify_type<composed_unit<Num, Den>> : public inner_simplify_type<held_type<simplify_type<su::remove_type<Den, Num>>>, held_type<simplify_type<su::remove_type<Num, Den>>>> {};
   }
 
   template<typename T>
@@ -42,8 +54,8 @@ namespace su
     
     template<typename... L, typename... R>
     struct are_equivalent<type_list<L...>, type_list<R...>> : public std::conjunction<
-      std::is_same<type_list<>, su::remove<type_list<L...>, type_list<R...>>>,
-      std::is_same<type_list<>, su::remove<type_list<R...>, type_list<L...>>>
+      std::is_same<type_list<>, su::remove_type<type_list<L...>, type_list<R...>>>,
+      std::is_same<type_list<>, su::remove_type<type_list<R...>, type_list<L...>>>
     > {};
 
     template<typename LNum, typename LDen, typename RNum, typename RDen>
