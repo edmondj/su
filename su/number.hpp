@@ -99,7 +99,6 @@ namespace su
     {
       using median_unit = fallback_unit<DestUnit>;
 
-      template<typename T>
       static constexpr auto convert(T&& value)
       {
         return su::converter<median_unit, DestUnit>::convert(su::converter<SrcUnit, median_unit>::convert(std::forward<T>(value)));
