@@ -54,7 +54,7 @@ SU_DECLARE_LITERAL(atto ## unit, a ## symbol) \
 SU_DECLARE_LITERAL(femto ## unit, f ## symbol) \
 SU_DECLARE_LITERAL(pico ## unit, p ## symbol) \
 SU_DECLARE_LITERAL(nano ## unit, n ## symbol) \
-SU_DECLARE_LITERAL(micro ## unit, μ ## symbol) \
+SU_DECLARE_LITERAL(micro ## unit, u ## symbol) \
 SU_DECLARE_LITERAL(milli ## unit, m ## symbol) \
 SU_DECLARE_LITERAL(centi ## unit, c ## symbol) \
 SU_DECLARE_LITERAL(deci ## unit, d ## symbol) \
