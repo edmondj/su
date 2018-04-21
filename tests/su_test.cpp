@@ -1,4 +1,4 @@
-﻿#include "catch.hpp"
+#include "catch.hpp"
 #include "catch.hpp"
 #include "su.hpp"
 #include "si.hpp"
