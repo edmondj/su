@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "number.hpp"
 
@@ -41,45 +41,31 @@ struct converter<dest_unit, src_unit> \
   static constexpr auto convert(T&& value) { return std::forward<T>(value) / ratio; } \
 };
 
-  SU_DECLARE_METRIC_UNIT(meter)
+#define SU_DECLARE_LITERAL(unit, symbol) \
+namespace literals \
+{ \
+  unit<unsigned long long int> operator ""_ ## symbol (unsigned long long int value) { return unit<unsigned long long int>(value); } \
+  unit<long double> operator ""_ ## symbol (long double value) { return unit<long double>(value); } \
+}
 
-  template<>
-  struct unit_metadata<meter_unit>
-  {
-    constexpr static const char symbol = 'm';
-  };
-
-  SU_DECLARE_UNIT(inch)
-
-  template<>
-  struct unit_metadata<inch_unit>
-  {
-    constexpr static const char symbol = '"';
-  };
-
-  SU_BASIC_CONVERTER(inch_unit, meter_unit, 0.0254)
-
-
-  SU_DECLARE_UNIT(foot)
-
-  template<>
-  struct unit_metadata<foot_unit>
-  {
-    constexpr static const char symbol = '\'';
-    using fallback_unit = inch_unit;
-  };
-
-  SU_BASIC_CONVERTER(foot_unit, inch_unit, 12.0)
+#define SU_DECLARE_METRIC_LITERAL(unit, symbol) \
+SU_DECLARE_LITERAL(unit, symbol) \
+SU_DECLARE_LITERAL(atto ## unit, a ## symbol) \
+SU_DECLARE_LITERAL(femto ## unit, f ## symbol) \
+SU_DECLARE_LITERAL(pico ## unit, p ## symbol) \
+SU_DECLARE_LITERAL(nano ## unit, n ## symbol) \
+SU_DECLARE_LITERAL(micro ## unit, μ ## symbol) \
+SU_DECLARE_LITERAL(milli ## unit, m ## symbol) \
+SU_DECLARE_LITERAL(centi ## unit, c ## symbol) \
+SU_DECLARE_LITERAL(deci ## unit, d ## symbol) \
+SU_DECLARE_LITERAL(deca ## unit, da ## symbol) \
+SU_DECLARE_LITERAL(hecto ## unit, h ## symbol) \
+SU_DECLARE_LITERAL(kilo ## unit, k ## symbol) \
+SU_DECLARE_LITERAL(mega ## unit, M ## symbol) \
+SU_DECLARE_LITERAL(giga ## unit, G ## symbol) \
+SU_DECLARE_LITERAL(tera ## unit, T ## symbol) \
+SU_DECLARE_LITERAL(peta ## unit, P ## symbol) \
+SU_DECLARE_LITERAL(exa ## unit, E ## symbol)
 
 
-  SU_DECLARE_UNIT(yard)
-
-  template<>
-  struct unit_metadata<yard_unit>
-  {
-    constexpr static const char* symbol = "yd";
-    using fallback_unit = foot_unit;
-  };
-
-  SU_BASIC_CONVERTER(yard_unit, foot_unit, 3)
 }
