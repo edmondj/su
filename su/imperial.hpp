@@ -54,4 +54,24 @@ namespace su
 
   SU_BASIC_CONVERTER(mile_unit, yard_unit, 1760)
   SU_DECLARE_LITERAL(mile, mi)
+
+  SU_DECLARE_UNIT(pound)
+  SU_BASIC_CONVERTER(pound_unit, gram_unit, 453.59237)
+  template<>
+  struct unit_metadata<pound_unit>
+  {
+    constexpr static const char* symbol = "lb";
+    using fallback_unit = gram_unit;
+  };
+  SU_DECLARE_LITERAL(pound, lb)
+
+  SU_DECLARE_UNIT(ounce)
+  SU_BASIC_CONVERTER(pound_unit, ounce_unit, 16)
+  template<>
+  struct unit_metadata<ounce_unit>
+  {
+    constexpr static const char* symbol = "oz";
+    using fallback_unit = pound_unit;
+  };
+  SU_DECLARE_LITERAL(ounce, oz)
 }
