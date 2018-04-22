@@ -32,13 +32,13 @@ template<> \
 struct converter<src_unit, dest_unit> \
 {\
   template<typename T> \
-  static constexpr auto convert(T&& value) { return std::forward<T>(value) * ratio; } \
+  static constexpr auto convert(T&& value) { return std::forward<T>(value) * (ratio); } \
 }; \
 template<> \
 struct converter<dest_unit, src_unit> \
 {\
   template<typename T> \
-  static constexpr auto convert(T&& value) { return std::forward<T>(value) / ratio; } \
+  static constexpr auto convert(T&& value) { return std::forward<T>(value) / (ratio); } \
 };
 
 #define SU_DECLARE_LITERAL(unit, symbol) \

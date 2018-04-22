@@ -168,29 +168,6 @@ namespace su
   template<typename T, typename Ratio, typename Unit>
   constexpr bool is_number<number<T, Ratio, Unit>> = true;
 
-
-  //template<typename T, typename SrcUnit, typename DestUnit>
-  //struct converter<T, SrcUnit, DestUnit, std::enable_if_t<!std::is_same_v<fallback_unit<SrcUnit>, DestUnit> && is_convertible<T, fallback_unit<SrcUnit>, DestUnit>>>
-  //{
-  //  using median_unit = fallback_unit<SrcUnit>;
-
-  //  static constexpr T convert(const T& value)
-  //  {
-  //    return converter<T, median_unit, DestUnit>::convert(converter<T, SrcUnit, median_unit>::convert(value));
-  //  }
-  //};
-
-  //template<typename T, typename SrcUnit, typename DestUnit>
-  //struct converter<T, SrcUnit, DestUnit, std::enable_if_t<!std::is_same_v<SrcUnit, fallback_unit<DestUnit>> && is_convertible<T, SrcUnit, fallback_unit<DestUnit>>>>
-  //{
-  //  using median_unit = fallback_unit<DestUnit>;
-
-  //  static constexpr T convert(const T& value)
-  //  {
-  //    return converter<T, median_unit, DestUnit>::convert(converter<T, SrcUnit, median_unit>::convert(value));
-  //  }
-  //};
-
   template<typename T, typename U>
   constexpr bool is_value_constructible = !is_number<std::decay_t<U>> && std::is_constructible_v<T, U>;
 

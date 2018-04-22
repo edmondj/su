@@ -65,13 +65,7 @@ namespace su
   };
   SU_DECLARE_LITERAL(pound, lb)
 
-  SU_DECLARE_UNIT(ounce)
-  SU_BASIC_CONVERTER(pound_unit, ounce_unit, 16)
-  template<>
-  struct unit_metadata<ounce_unit>
-  {
-    constexpr static const char* symbol = "oz";
-    using fallback_unit = pound_unit;
-  };
+  template<typename T>
+  using ounce = pound<T, std::ratio<1, 16>>;
   SU_DECLARE_LITERAL(ounce, oz)
 }
